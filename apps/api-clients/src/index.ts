@@ -7,7 +7,7 @@ function hello() {
   greeter.greeterServiceSayHello({
     name: 'World',
   }).then((response) => {
-    console.log(response);
+    console.log(response.data);
   }
   ).catch((error) => {
     console.error('Error:', error);
