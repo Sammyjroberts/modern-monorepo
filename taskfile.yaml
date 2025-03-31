@@ -1,0 +1,86 @@
+version: "3"
+
+tasks:
+  install-tools:
+    desc: Install required tools
+    cmds:
+      - go install github.com/bufbuild/buf/cmd/buf@latest
+      - go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+      - go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+  generate:
+    desc: Generate gRPC stubs from proto files
+    cmds:
+      - buf generate
+
+  clean:
+    desc: Clean generated files
+    cmds:
+      - rm -rf bin
+      - rm -rf gen
+
+  generate-ts-client:
+    desc: Generate TypeScript API clients from Swagger/OpenAPI specifications
+    cmds:
+      # Create the output directory if it doesn't exist
+      - mkdir -p apps/api-clients/src
+
+      # Clean any previous client code
+      - rm -rf apps/api-clients/src/greeter
+
+      # Install OpenAPI Generator CLI if not already installed
+      - npm install @openapitools/openapi-generator-cli -g || true
+
+      # Generate TypeScript client using OpenAPI Generator
+      - >
+          openapi-generator-cli generate
+          -i openapiv2/types/proto/greeter/greeter.swagger.json
+          -g typescript-axios
+          -o apps/api-clients/src/greeter
+          --additional-properties=supportsES6=true,npmName=@api/greeter-client,npmVersion=1.0.0
+
+      # Update package.json for the generated client
+      - cd apps/api-clients && npm init -y
+      - >
+          cd apps/api-clients && npm pkg set
+          "name"="@api/clients"
+          "version"="1.0.0"
+          "description"="Generated API clients for the modern-monorepo"
+          "main"="dist/index.js"
+          "types"="dist/index.d.ts"
+          "private"="true"
+          "scripts.build"="tsc"
+          "scripts.clean"="rimraf dist"
+
+      # Install necessary dependencies
+      - cd apps/api-clients && npm install --save axios
+      - cd apps/api-clients && npm install --save-dev typescript rimraf @types/node
+
+      # Create tsconfig.json if it doesn't exist
+      - |
+          if [ ! -f apps/api-clients/tsconfig.json ]; then
+            cat > apps/api-clients/tsconfig.json << 'EOF'
+          {
+            "compilerOptions": {
+              "target": "es2018",
+              "module": "commonjs",
+              "declaration": true,
+              "outDir": "./dist",
+              "strict": true,
+              "esModuleInterop": true,
+              "skipLibCheck": true,
+              "forceConsistentCasingInFileNames": true
+            },
+            "include": ["src/**/*"],
+            "exclude": ["node_modules", "dist"]
+          }
+          EOF
+          fi
+
+      # Create an index.ts file to export everything
+      - |
+          cat > apps/api-clients/src/index.ts << 'EOF'
+          export * from './greeter';
+          EOF
+
+    silent: false

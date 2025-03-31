@@ -1,0 +1,15 @@
+
+version: v1
+name: buf.build/sammyjroberts/modern-monorepo
+deps:
+  - buf.build/googleapis/googleapis
+lint:
+  use:
+    - DEFAULT
+  except:
+    - ENUM_VALUE_PREFIX
+    - ENUM_ZERO_VALUE_SUFFIX
+    - SERVICE_SUFFIX
+breaking:
+  use:
+    - FILE

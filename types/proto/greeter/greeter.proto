@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package greeter.v1;
+
+option go_package = "github.com/sammyjroberts/modern-monorepo/types/gen/go/greeter/v1;greeterv1";
+import "google/api/annotations.proto";
+
+// The Greeter service definition
+service GreeterService {
+  // Sends a greeting
+  rpc SayHello(HelloRequest) returns (HelloResponse) {
+    option (google.api.http) = {
+
+      post : "/v1/example/echo"
+      body : "*"
+    };
+  }
+}
+
+// The request message containing the user's name
+message HelloRequest { string name = 1; }
+
+// The response message containing the greeting
+message HelloResponse { string greeting = 1; }
