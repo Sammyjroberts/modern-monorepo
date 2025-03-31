@@ -3,7 +3,7 @@ import { GreeterServiceApi } from './greeter';
 export * from './greeter';
 
 function hello() {
-  const greeter = new GreeterServiceApi();
+  const greeter = new GreeterServiceApi(undefined, 'http://localhost:8081');
   greeter.greeterServiceSayHello({
     name: 'World',
   }).then((response) => {
@@ -14,3 +14,7 @@ function hello() {
   }
   );
 }
+(async () => {
+  hello();
+}
+)();
